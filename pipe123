@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('git-install') {
+            steps {
+            git branch: 'main', url: 'https://github.com/amritasinghchouhan/Selected-.git'
+            }
+        }
+        stage('docker-install') {
+            steps {
+                   sh '''
+           sudo yum install docker -y
+           sudo systemctl start docker
+           sudo systemctl enable docker
+            '''
+            }
+        }
+        stage ('docker-build') {
+         steps {
+            sh '''
+            sudo docker build -t myimg .
+            '''
+         }
+        }
+        stage ('pushing-image'){
+            steps{
+              sh '''
+             sudo docker build -t new_repo .
+             '''
+            }
+        }
+
+       stage ('pushing-image'){
+            steps{
+              sh '''
+             sudo aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin 471112517670.dkr.ecr.ap-south-1.amazonaws.com
+             sudo docker tag new_repo:latest 471112517670.dkr.ecr.ap-south-1.amazonaws.com/new_repo:latest
+             sudo docker push 471112517670.dkr.ecr.ap-south-1.amazonaws.com/new_repo:latest
+            '''
+            }
+
+        }
+}
+}
